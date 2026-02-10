@@ -1,0 +1,8 @@
+{
+  "name": "CODE Battle",
+  "description": "A high-stakes competitive programming platform with real-time proctoring, randomized problem assignment, and Gemini-powered automated code evaluation.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
