@@ -1,20 +1,25 @@
+
 {
-  "name": "code-battle",
+  "name": "code-battle-arena",
   "version": "2.0.0",
+  "description": "Production ready competitive programming platform",
+  "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "prebuild": "mkdir -p dist",
+    "build": "esbuild index.tsx --bundle --minify --sourcemap --platform=browser --outfile=dist/bundle.js --loader:.tsx=tsx --loader:.ts=ts --define:process.env.API_KEY=\"$API_KEY\""
   },
   "dependencies": {
     "express": "^4.18.2",
     "pg": "^8.11.3",
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0"
+    "@google/genai": "^1.40.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "recharts": "^2.15.0"
   },
   "devDependencies": {
-    "vite": "^5.0.0",
-    "typescript": "^5.0.0"
-  }
+    "esbuild": "^0.20.0"
+  },
+  "author": "Bhargav",
+  "license": "MIT"
 }
