@@ -1,17 +1,20 @@
-
 {
-  "name": "code-battle-arena",
+  "name": "code-battle",
   "version": "2.0.0",
-  "description": "Production ready competitive programming platform",
-  "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "dependencies": {
     "express": "^4.18.2",
-    "pg": "^8.11.3"
+    "pg": "^8.11.3",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
   },
-  "author": "Bhargav",
-  "license": "MIT"
+  "devDependencies": {
+    "vite": "^5.0.0",
+    "typescript": "^5.0.0"
+  }
 }
