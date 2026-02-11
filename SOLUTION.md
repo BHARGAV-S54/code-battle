@@ -1,24 +1,17 @@
 
-# 🛠 Final Build & Blank Screen Resolution
+# 🚀 Deployment Finalized
 
-The error `Error: Cannot find module '@vitejs/plugin-react'` indicates your environment is trying to use Vite, but the dependencies were missing. This has been fixed.
+The build was successful, but the app was stuck because the server wasn't pointing to the compiled files.
 
-## 1. Clean Deployment Steps
-To ensure a fresh start on Render:
-1. Push these updated files to your GitHub repository.
-2. Go to your **Render Dashboard**.
-3. Select your `code-battle` service.
-4. Click **Manual Deploy** -> **Clear Build Cache & Deploy**.
+## What changed?
+1. **Server Awareness**: The server now looks specifically for the `dist/` folder that Vite creates.
+2. **Health Check**: Added `/healthz` to help Render know exactly when the app is ready.
+3. **SPA Handling**: Improved the "catch-all" routing to ensure refreshing the page doesn't cause a 404.
 
-## 2. Verify Render Settings
-Ensure these are exactly as follows in **Settings**:
-- **Build Command**: `npm install && npm run build`
-- **Start Command**: `node server.js`
+## To finish the deploy:
+1. Push these changes to GitHub.
+2. Render will automatically start a new build.
+3. Once the build log says `Build successful`, wait about 60 seconds for the "Deploying" status to turn into "Live".
+4. If it stays in "Deploying" for more than 5 minutes, check the **Service Logs** (not the build logs) to see if you see the message: `CODE BATTLE SERVER LIVE ON PORT 3000`.
 
-## 3. Environment Variables
-In the **Environment** tab, ensure you have:
-- `API_KEY`: Your Gemini API Key.
-- `DATABASE_URL`: Your Postgres connection string.
-
-## 4. Why this fixes the Blank Screen
-The "Blank Screen" usually happens because the browser encounters an error like `process is not defined`. We have now added a `vite.config.ts` that uses `define` to safely inject your `API_KEY` into the frontend code during the build process, preventing that specific crash.
+If you still see a blank screen, open the browser console (Press F12) and check for any errors. If you see `process is not defined`, it means the `API_KEY` was not provided during the build step.

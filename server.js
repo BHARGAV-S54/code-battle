@@ -9,16 +9,15 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 
-// In production, Vite builds everything into the 'dist' folder
-// including the index.html. We serve that folder as static.
+// Path to the Vite production build
 const distPath = path.join(__dirname, 'dist');
 
-if (fs.existsSync(distPath)) {
-  app.use(express.static(distPath));
-} else {
-  // Fallback for development if dist doesn't exist yet
-  app.use(express.static(__dirname));
-}
+// Log the environment for debugging
+console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+console.log(`Looking for production build at: ${distPath}`);
+
+// Health check endpoint for Render
+app.get('/healthz', (req, res) => res.status(200).send('OK'));
 
 /**
  * PRODUCTION DATABASE SETUP
@@ -31,8 +30,7 @@ if (isProd) {
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false }
   });
-  console.log('Connected to PostgreSQL Production Database');
-
+  
   const initDb = async () => {
     try {
       await pool.query(`
@@ -64,9 +62,9 @@ if (isProd) {
         VALUES (1, 'LOCKED', 60) 
         ON CONFLICT (id) DO NOTHING;
       `);
-      console.log('Database tables initialized');
+      console.log('PostgreSQL Tables Validated');
     } catch (err) {
-      console.error('Database initialization failed:', err);
+      console.error('Database Initialization Error:', err.message);
     }
   };
   initDb();
@@ -106,21 +104,31 @@ app.get('/api/state', async (req, res) => {
       return res.json(data);
     }
   } catch (err) {
-    console.error("State sync failed:", err);
-    return res.status(500).json({ error: 'Internal Database Sync Error' });
+    console.error("API State Error:", err.message);
+    return res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
-// Capture-all route to serve the built index.html from dist
-app.get('*', (req, res) => {
-  const productionIndex = path.join(distPath, 'index.html');
-  if (fs.existsSync(productionIndex)) {
-    res.sendFile(productionIndex);
-  } else {
+// STATIC ASSETS
+// In production, we MUST serve the dist folder.
+if (fs.existsSync(distPath)) {
+  console.log('Production assets found. Serving from /dist');
+  app.use(express.static(distPath));
+  
+  // SPA Routing: Always serve the production index.html for any non-API route
+  app.get('*', (req, res) => {
+    if (req.path.startsWith('/api')) return res.status(404).json({error: 'Not found'});
+    res.sendFile(path.join(distPath, 'index.html'));
+  });
+} else {
+  console.log('Production assets NOT found. Falling back to source directory.');
+  app.use(express.static(__dirname));
+  app.get('*', (req, res) => {
+    if (req.path.startsWith('/api')) return res.status(404).json({error: 'Not found'});
     res.sendFile(path.join(__dirname, 'index.html'));
-  }
-});
+  });
+}
 
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`CODE Battle Production Server running at port ${PORT}`);
+  console.log(`CODE BATTLE SERVER LIVE ON PORT ${PORT}`);
 });
