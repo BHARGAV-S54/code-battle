@@ -1,50 +1,24 @@
 
-# 🛠 Blank Screen Resolution Guide
+# 🛠 Final Build & Blank Screen Resolution
 
-If you are seeing a blank screen after deploying to Render, it is usually due to one of the following three reasons. Follow these steps to diagnose and fix it.
+The error `Error: Cannot find module '@vitejs/plugin-react'` indicates your environment is trying to use Vite, but the dependencies were missing. This has been fixed.
 
-## 1. Diagnose with Browser Console (CRITICAL)
-Before changing code, find out the *exact* error:
-1. Open your site in Chrome/Edge.
-2. Press **F12** (or Right-click > Inspect).
-3. Click the **Console** tab.
-4. **Common Errors:**
-   - `GET .../dist/bundle.js 404 (Not Found)` -> The build didn't run or the folder is missing.
-   - `Uncaught ReferenceError: process is not defined` -> The bundler didn't replace `process.env.API_KEY`.
-   - `Uncaught SyntaxError: ...` -> The build failed and produced an invalid file.
+## 1. Clean Deployment Steps
+To ensure a fresh start on Render:
+1. Push these updated files to your GitHub repository.
+2. Go to your **Render Dashboard**.
+3. Select your `code-battle` service.
+4. Click **Manual Deploy** -> **Clear Build Cache & Deploy**.
 
----
+## 2. Verify Render Settings
+Ensure these are exactly as follows in **Settings**:
+- **Build Command**: `npm install && npm run build`
+- **Start Command**: `node server.js`
 
-## 2. Check Render Build Settings
-Go to your **Render Dashboard** > **Settings** and ensure these are exactly:
+## 3. Environment Variables
+In the **Environment** tab, ensure you have:
+- `API_KEY`: Your Gemini API Key.
+- `DATABASE_URL`: Your Postgres connection string.
 
-- **Build Command:** `npm install && npm run build`
-- **Start Command:** `node server.js`
-
-**Wait!** Did you add the `API_KEY` environment variable?
-- Go to **Environment** tab in Render.
-- Add `API_KEY` with your Gemini key.
-- Add `DATABASE_URL` with your Postgres URL.
-
----
-
-## 3. The `process.env` Issue
-In the browser, `process.env` does not exist. Our `esbuild` script replaces `process.env.API_KEY` with the actual key during the build. If the build command in Render doesn't have access to the key *at build time*, it might fail.
-
-**Fix implemented in this update:**
-We've updated `package.json` to use a more resilient build script that handles the `dist` directory and environment variables more cleanly.
-
----
-
-## 4. Path Resolution
-Render runs the server from the root. The `server.js` is configured to serve the root and the `/dist` folder.
-- Current Path: `https://your-app.onrender.com/dist/bundle.js`
-- Ensure your `server.js` contains: `app.use('/dist', express.static(path.join(__dirname, 'dist')));`
-
----
-
-## 5. Deployment Step-by-Step
-1. Commit the changes provided in this update.
-2. Push to GitHub.
-3. Render will auto-deploy.
-4. Watch the **Logs** in Render. You should see `npm run build` finish successfully before `node server.js` starts.
+## 4. Why this fixes the Blank Screen
+The "Blank Screen" usually happens because the browser encounters an error like `process is not defined`. We have now added a `vite.config.ts` that uses `define` to safely inject your `API_KEY` into the frontend code during the build process, preventing that specific crash.

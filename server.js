@@ -7,13 +7,18 @@ const { Pool } = require('pg');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
 app.use(express.json());
 
-// Serve the dist folder where the bundle lives
-app.use('/dist', express.static(path.join(__dirname, 'dist')));
-// Serve other static assets from the root
-app.use(express.static(__dirname));
+// In production, Vite builds everything into the 'dist' folder
+// including the index.html. We serve that folder as static.
+const distPath = path.join(__dirname, 'dist');
+
+if (fs.existsSync(distPath)) {
+  app.use(express.static(distPath));
+} else {
+  // Fallback for development if dist doesn't exist yet
+  app.use(express.static(__dirname));
+}
 
 /**
  * PRODUCTION DATABASE SETUP
@@ -69,7 +74,7 @@ if (isProd) {
 
 app.get('/api/state', async (req, res) => {
   try {
-    if (isProd) {
+    if (isProd && pool) {
       const teamsRes = await pool.query('SELECT * FROM teams');
       const submissionsRes = await pool.query('SELECT data FROM submissions');
       const contestRes = await pool.query('SELECT * FROM contest_state WHERE id = 1');
@@ -93,7 +98,6 @@ app.get('/api/state', async (req, res) => {
         }
       });
     } else {
-      // Local fallback logic
       const DB_FILE = path.join(__dirname, 'data.json');
       let data = { teams: [], contest: { status: 'LOCKED', durationMinutes: 60, problemBank: [] }, submissions: [] };
       if (fs.existsSync(DB_FILE)) {
@@ -107,9 +111,14 @@ app.get('/api/state', async (req, res) => {
   }
 });
 
-// Capture-all route to serve index.html for SPA behavior
+// Capture-all route to serve the built index.html from dist
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+  const productionIndex = path.join(distPath, 'index.html');
+  if (fs.existsSync(productionIndex)) {
+    res.sendFile(productionIndex);
+  } else {
+    res.sendFile(path.join(__dirname, 'index.html'));
+  }
 });
 
 app.listen(PORT, '0.0.0.0', () => {
